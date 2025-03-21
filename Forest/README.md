@@ -213,7 +213,7 @@ s3rvice
 
 Question 5: 
 To what port can we connect with these creds to get an interactive shell?
-
+Answer: 5985
 # Privilege Escalation
 
 User Enumeration:
