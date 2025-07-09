@@ -98,3 +98,28 @@ Matching Defaults entries for activemq on broker:
 User activemq may run the following commands on broker:
     (ALL : ALL) NOPASSWD: /usr/sbin/nginx
 ```
+
+Useful URL: evkl1d/CVE-2023-46604
+
+Question: Which nginx directive can be used to define allowed WebDAV methods?
+
+Answer: dav_methods
+
+Question: Which HTTP method is used to write files via the WebDAV protocol?
+
+Answer: PUT
+
+Question: Which flag is used to set a custom nginx configuration by specifying a file?
+
+Answer: -c
+
+
+# Privilege Escalation
+
+URL: https://gist.github.com/DylanGrl/ab497e2f01c7d672a80ab9561a903406#file-nginx_privesc_sudo-md
+
+create exploit.sh on local machine and then transfer via python server to victim machine.
+
+```
+https://gist.github.com/DylanGrl/ab497e2f01c7d672a80ab9561a903406#file-nginx_privesc_sudo-md
+```
