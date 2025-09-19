@@ -180,3 +180,11 @@ Checking SMB 2.2.1a:
 https://www.rapid7.com/db/modules/exploit/linux/samba/trans2open/
 
 ![](image-2.png)
+
+By also trying to get the ssh credentials for root account on the machine, the following issue appeared: 
+![](image-3.png)
+
+Resolve the issue: 
+https://github.com/vanhauser-thc/thc-hydra/issues/792
+
+https://github.com/vanhauser-thc/thc-hydra/issues/792#issuecomment-1720924012
